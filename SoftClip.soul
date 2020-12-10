@@ -1,0 +1,12 @@
+processor SoftClip {
+    input stream float audioIn;
+    output stream float audioOut;
+
+    void run() {
+        loop {
+            audioOut << Util::fastTanh(3.0f * audioIn);
+
+            advance();
+        }
+    }
+}

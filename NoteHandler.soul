@@ -1,0 +1,119 @@
+namespace NoteHandler
+{
+    struct NoteInfo
+    {
+        int channel;
+        float bendSemitones;
+        float note;
+        float pressure;
+        float slide;
+    }
+
+    struct NoteHandler
+    {
+        float currentVelocity;
+        float currentNote;
+        float currentBendSemitones;
+        float currentPressure;
+        float currentSlide;
+
+        int maxNotes;
+
+        NoteInfo[16] noteArray;
+        wrap<16> activeNotes;
+    }
+
+    NoteHandler create()
+    {
+        NoteHandler r;
+        r.currentVelocity = 0;
+        r.currentNote = 0;
+        r.activeNotes = 0;
+        r.maxNotes = 16;
+        return r;
+    }
+
+    void addNote (NoteHandler& this, int channel, float note, float velocity)
+    {
+        // Initial note velocity is used
+        if (int(this.activeNotes) == 0)
+            this.currentVelocity = velocity;
+
+        if (int(this.activeNotes) < this.maxNotes)
+        {
+            this.noteArray[this.activeNotes].channel = channel;
+            this.noteArray[this.activeNotes].note = note;
+            this.noteArray[this.activeNotes].bendSemitones = 0;
+            this.activeNotes++;
+        }
+
+        this.currentNote = note;
+        this.currentBendSemitones = 0;
+        this.currentPressure = 0;
+        this.currentSlide = 0;
+    }
+
+    void removeNote (NoteHandler& this, int channel, float note)
+    {
+        wrap<this.noteArray.size> readPoint = 0;
+        wrap<this.noteArray.size> writePoint = 0;
+
+        while (readPoint < int(this.activeNotes))
+        {
+            if (this.noteArray[readPoint].note != note)
+            {
+                this.noteArray[writePoint] = this.noteArray[readPoint];
+                ++writePoint;
+            }
+
+            ++readPoint;
+        }
+
+        this.activeNotes = writePoint;
+
+        // Update the current active note
+        if (int(this.activeNotes) > 0)
+        {
+            this.currentNote = this.noteArray[this.activeNotes - 1].note;
+            this.currentBendSemitones = this.noteArray[this.activeNotes - 1].bendSemitones;
+        }
+    }
+
+    void addPitchBend (NoteHandler& this, int channel, float bendSemitones)
+    {
+        // Update all notes on this channel
+        for (int i = 0; i < int(this.activeNotes); ++i)
+            if (this.noteArray.at(i).channel == channel)
+                this.noteArray.at(i).bendSemitones = bendSemitones;
+
+        if (int(this.activeNotes) > 0)
+            this.currentBendSemitones = this.noteArray[this.activeNotes - 1].bendSemitones;
+    }
+
+    void addPressure (NoteHandler& this, int channel, float pressure)
+    {
+        for (int i = 0; i < int(this.activeNotes); ++i)
+            if (this.noteArray.at(i).channel == channel)
+                this.noteArray.at(i).pressure = pressure;
+
+        if (int(this.activeNotes) > 0)
+            this.currentPressure = this.noteArray[this.activeNotes - 1].pressure;
+    }
+
+    void addSlide (NoteHandler& this, int channel, float slide)
+    {
+        for (int i = 0; i < int(this.activeNotes); ++i)
+            if (this.noteArray.at(i).channel == channel)
+                this.noteArray.at(i).slide = slide;
+
+        if (int(this.activeNotes) > 0)
+            this.currentSlide= this.noteArray[this.activeNotes - 1].slide;
+    }
+
+    float getCurrentNote (NoteHandler& this)        { return this.currentNote + this.currentBendSemitones; }
+    float getCurrentVelocity (NoteHandler& this)    { return this.currentVelocity; }
+    float getCurrentPressure (NoteHandler& this)    { return this.currentPressure; }
+    float getCurrentSlide (NoteHandler& this)       { return this.currentSlide; }
+
+    bool isNoteActive (NoteHandler& this)           { return int(this.activeNotes) != 0; }
+}

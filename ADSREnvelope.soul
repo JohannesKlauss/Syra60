@@ -1,0 +1,114 @@
+namespace Syra60 {
+    processor ADSREnvelope
+    {
+        input stream float triggerLevel;
+        output stream float envelopeLevel;
+        input event float attack, decay, sustain, release;
+
+        const float[5] attackDurationCurve = (0.001f, 0.03f, 0.24f, 0.65f, 3.25f);
+        const float[5] decayDurationCurve = (0.002f, 0.096f, 0.984f, 4.449f, 19.783f);
+        const float[5] releaseDurationCurve = (0.002f, 0.096f, 0.984f, 4.449f, 19.783f);
+
+        const float attackTCO = 0.632f;
+        const float decayTCO = 0.025f;
+
+        event attack (float f)
+        {
+            let seconds = Util::interpolatedLookup(f * 0.01f * attackDurationCurve.size, attackDurationCurve);
+
+            attackCoeff = exp(-log((1.0f + attackTCO) / attackTCO) / (sampleRate * seconds));
+            attackOffset = (1.0f + attackTCO) * (1.0f - attackCoeff);
+        }
+
+        event decay (float f)
+        {
+            let seconds = Util::interpolatedLookup(f * 0.01f * decayDurationCurve.size, decayDurationCurve);
+
+            decayCoeff = exp(-log((1.0f + decayTCO) / decayTCO) / (sampleRate * seconds));
+            //decayOffset = (targetValue - decayTCO) * (1.0f - decayCoeff);
+        }
+
+        event sustain (float f)
+        {
+            sustainLevel = float64 (f) * 0.01f;
+        }
+
+        event release (float f)
+        {
+            let seconds = Util::interpolatedLookup(f * 0.01f * releaseDurationCurve.size, releaseDurationCurve);
+            let inverse = 1.0 / (sampleRate * seconds);
+            let secondsToMultiplier = pow (0.0001, inverse);
+
+            releaseMultiplier = secondsToMultiplier;
+        }
+
+        const float sampleRate = float (processor.frequency);
+
+        float64 attackCoeff = 0.0f;
+        float64 attackOffset = 0.0f;
+        float64 decayCoeff = 0.995f;
+        float64 decayOffset = 0.0f;
+        float64 sustainLevel = 1.0;
+        float64 releaseMultiplier = 0.99991;
+        float32 velocitySensitivity = 0.0f;
+        float64 targetValue = 1.0;
+
+        void calculateTargetValue (float noteVelocity)
+        {
+            // Use the velocitySensitivity to decide how the noteVelocity affects the target volume
+            // We determine a dB attenuation range, then the note velocity decides where we are on it
+            // Full velocity sensitivity is -12dB
+
+            // We use 100 as a 'loud' note, so that's 0.75 out of 100 as 'normal', any higher velocity will be louder
+            let attenuation = -12.0f * velocitySensitivity * (0.75f - noteVelocity);
+
+            targetValue = pow (10.0f, attenuation / 10.0f);
+        }
+
+        void run()
+        {
+            float64 value = 0;
+
+            loop
+            {
+                if (triggerLevel > 0)
+                {
+                    // Use the value of the trigger to modify our target value
+                    calculateTargetValue (triggerLevel);
+
+                    while (value < targetValue)
+                    {
+                        value = value * attackCoeff + attackOffset;
+                        envelopeLevel << float(value);
+                        advance();
+
+                        if (triggerLevel <= 0)
+                            break;
+                    }
+
+                    // Cap it to the target value
+                    value = min (value, targetValue);
+
+                    // Decay stage
+                    while (value > targetValue * sustainLevel && triggerLevel > 0)
+                    {
+                        value = value * decayCoeff + decayOffset;
+                        envelopeLevel << float (value);
+                        advance();
+                    }
+
+                    // Sustain stage
+                    while (triggerLevel > 0)
+                    {
+                        envelopeLevel << float (value);
+                        advance();
+                    }
+                }
+
+                value *= releaseMultiplier;
+                envelopeLevel << float (value);
+                advance();
+            }
+        }
+    }
+}

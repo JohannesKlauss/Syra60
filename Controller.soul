@@ -1,0 +1,43 @@
+// This processor controls the voices. It receives midi events, transforms them and sends them to the DCO, etc.
+
+namespace Syra60 {
+    processor Controller
+    {
+        input event (soul::note_events::NoteOn,
+                    soul::note_events::NoteOff,
+                    soul::note_events::PitchBend,
+                    soul::note_events::Pressure,
+                    soul::note_events::Slide) eventIn;
+
+        output stream float note1_noteOut, note1_frequencyOut, note1_velocity, note1_active,
+                            note1_pressure, note1_slide;
+
+        event eventIn (soul::note_events::NoteOn e)     { NoteHandler::addNote      (noteHandler, e.channel, e.note, e.velocity); }
+        event eventIn (soul::note_events::NoteOff e)    { NoteHandler::removeNote   (noteHandler, e.channel, e.note); }
+        event eventIn (soul::note_events::PitchBend e)  { NoteHandler::addPitchBend (noteHandler, e.channel, e.bendSemitones); }
+        event eventIn (soul::note_events::Pressure p)   { NoteHandler::addPressure  (noteHandler, p.channel, p.pressure); }
+        event eventIn (soul::note_events::Slide s)      { NoteHandler::addSlide     (noteHandler, s.channel, s.slide); }
+
+        NoteHandler::NoteHandler noteHandler;
+
+        void run()
+        {
+            noteHandler = NoteHandler::create();
+
+            loop
+            {
+                // Junos middle A is at 442 Hz.
+                let noteFrequency = pow(2.0f, (NoteHandler::getCurrentNote(noteHandler) - 69) / 12) * 442;
+
+                note1_noteOut      << NoteHandler::getCurrentNote(noteHandler);
+                note1_frequencyOut << noteFrequency;
+                note1_velocity     << NoteHandler::getCurrentVelocity(noteHandler);
+                note1_active       << (NoteHandler::isNoteActive(noteHandler) ? NoteHandler::getCurrentVelocity(noteHandler) : 0.0f);
+                note1_pressure     << NoteHandler::getCurrentPressure(noteHandler);
+                note1_slide        << NoteHandler::getCurrentSlide(noteHandler);
+
+                advance();
+            }
+        }
+    }
+}

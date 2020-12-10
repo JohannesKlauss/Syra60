@@ -1,0 +1,23 @@
+// This updates the parameters in a generic way. Audio isn't touched here, we return the current value of the parameter.
+
+processor ParameterStream
+{
+    input event float parameterUpdate;
+    output stream float audioOut;
+
+    event parameterUpdate (float f)
+    {
+        currentValue = f;
+    }
+
+    void run()
+    {
+        loop
+        {
+            audioOut << currentValue;
+            advance();
+        }
+    }
+
+    float currentValue;
+}

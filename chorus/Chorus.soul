@@ -1,0 +1,94 @@
+namespace Syra60 {
+    graph Chorus(float preFilterFrequency, float postFilterFrequency) {
+        input stream float audioIn;
+
+        input event float chorusMode;
+
+        output stream float<2> audioOut;
+
+        const float[4] leftNoChorus = (0.513f, 1.0f, 0.00154f, 0.00515f);
+        const float[4] leftMode1 = (0.513f, 0.44f, 0.00154f, 0.00515f);
+        const float[4] leftMode2 = (0.863f, 0.44f, 0.00154f, 0.00515f);
+        const float[4] leftMode12 = (9.75f, 0.44f, 0.00322f, 0.00356f);
+
+        const float[4] rightNoChorus = (0.513f, 1.0f, 0.00151f, 0.0054f);
+        const float[4] rightMode1 = (0.513f, 0.44f, 0.00151f, 0.0054f);
+        const float[4] rightMode2 = (0.863f, 0.44f, 0.00151f, 0.0054f);
+        const float[4] rightMode12 = (9.75f, 0.44f, 0.00328f, 0.00365f);
+
+        let
+        {
+            leftChannel = Syra60::ChorusChannel(leftNoChorus, leftMode1, leftMode2, leftMode12);
+            rightChannel = Syra60::ChorusChannel(rightNoChorus, rightMode1, rightMode2, rightMode12);
+
+            mixer = Syra60::ChorusMixer;
+            saturator = Syra60::ChorusSaturator;
+
+            preFilter = SinglePoleFilter(false, preFilterFrequency);
+            postLeftFilter = SinglePoleFilter(false, postFilterFrequency);
+            postRightFilter = SinglePoleFilter(false, postFilterFrequency);
+        }
+
+        connection
+        {
+            chorusMode -> leftChannel.chorusMode;
+            chorusMode -> rightChannel.chorusMode;
+
+            // pre filtered signal. Used to store and delay in chorus channel.
+            audioIn -> saturator -> preFilter.audioIn;
+
+            // Send pre filtered signal to channels.
+            preFilter.audioOut -> leftChannel.audioFilteredIn;
+            preFilter.audioOut -> rightChannel.audioFilteredIn;
+
+            // Send dry signal to channels.
+            audioIn -> leftChannel.audioDryIn;
+            audioIn -> rightChannel.audioDryIn;
+
+            // gain staiged dry signal to mixer.
+            leftChannel.audioOut -> mixer.audioLeftIn;
+            rightChannel.audioOut -> mixer.audioRightIn;
+
+            // delayed signal that goes into filtering.
+            leftChannel.audioOutToFilter -> postLeftFilter.audioIn;
+            rightChannel.audioOutToFilter -> postRightFilter.audioIn;
+
+            // filtered delayed signal to mixer
+            postLeftFilter.audioOut -> mixer.audioFilteredLeftIn;
+            postRightFilter.audioOut -> mixer.audioFilteredRightIn;
+
+            mixer.audioOut -> audioOut;
+        }
+    }
+
+    processor ChorusSaturator {
+        input stream float audioIn;
+
+        output stream float audioOut;
+
+        void run() {
+            loop {
+                audioOut << tanh(audioIn * 0.6f) * 1.86202f;
+
+                advance();
+            }
+        }
+    }
+
+    processor ChorusMixer {
+        input stream float audioLeftIn, audioRightIn, audioFilteredLeftIn, audioFilteredRightIn;
+
+        output stream float<2> audioOut;
+
+        void run() {
+            loop {
+                let left  = audioLeftIn + audioFilteredLeftIn;
+                let right = audioRightIn + audioFilteredRightIn;
+
+                audioOut << float<2> (left, right);
+
+                advance();
+            }
+        }
+    }
+}

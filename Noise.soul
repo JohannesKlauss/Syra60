@@ -1,0 +1,29 @@
+namespace Syra60 {
+    processor Noise {
+        input stream float noiseLevelIn, whiteNoiseIn;
+
+        output stream float audioOut;
+
+        float
+            b1 = 0.0f,
+            a0 = 1.0f,
+            z1 = 0.0f;
+
+        void run() {
+            var rng = soul::random::RandomNumberState(processor.id + 10);
+
+            b1 = float32(-exp((-2.0f * 5000 * pi) / processor.frequency));
+            a0 = a0 + b1;
+
+            loop {
+                const float out = rng.getNextBipolar() * a0 - z1;
+
+                z1 = b1 * out;
+
+                audioOut << out * (noiseLevelIn / 4.9f);
+
+                advance();
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+namespace Syra60 {
+    processor VCA {
+        input stream float audioIn, levelIn;
+
+        output stream float audioOut;
+
+        void run() {
+            loop {
+                audioOut << audioIn * levelIn;
+
+                advance();
+            }
+        }
+    }
+}

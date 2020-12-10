@@ -1,0 +1,34 @@
+
+{
+    "soulPatchV1":
+    {
+        "ID":               "com.syra.Syra60",
+        "version":          "0.1",
+        "name":             "Syra60",
+        "description":      "A Juno 60 clone",
+        "category":         "synth",
+        "manufacturer":     "Syra",
+        "isInstrument":     true,
+
+        "source": [
+            "Syra60.soul",
+            "Controller.soul",
+            "DCO.soul",
+            "NoteHandler.soul",
+            "ParameterStream.soul",
+            "Voice.soul",
+            "Oscillators.soul",
+            "SoftClip.soul",
+            "Util.soul",
+            "VCA.soul",
+            "SinglePoleFilter.soul",
+            "Noise.soul",
+            "ADSREnvelope.soul",
+            "DAREnvelope.soul",
+            "Mixer.soul",
+            "chorus/Chorus.soul",
+            "chorus/ChorusChannel.soul",
+            "LFO.soul"        
+        ]
+    }
+}

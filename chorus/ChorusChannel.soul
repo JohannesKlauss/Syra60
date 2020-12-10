@@ -1,0 +1,115 @@
+namespace Syra60 {
+    processor ChorusChannel(float[4] noChorus, float[4] mode1, float[4] mode2, float[4] mode12) {
+        input stream float audioDryIn, audioFilteredIn;
+
+        input event float chorusMode;
+
+        output stream float audioOut, audioOutToFilter;
+
+        event chorusMode(float f) {
+            updateMode(f);
+        }
+
+        void updateMode(float f) {
+            if (dryCurrent < 1.0f) {
+                dryChange = 0.0005f;
+                dryTarget = 1.0f;
+                nextChorusMode = f;
+            } else {
+                if (f == 0.0f) {
+                    ringBuffer = float[264] ();
+                    updateValues(noChorus[0], noChorus[1], noChorus[2], noChorus[3]);
+                } else if (f == 1.0f) {
+                    updateValues(mode1[0], mode1[1], mode1[2], mode1[3]);
+                }  else if (f == 2.0f) {
+                    updateValues(mode2[0], mode2[1], mode2[2], mode2[3]);
+                }  else if (f == 3.0f) {
+                    updateValues(mode12[0], mode12[1], mode12[2], mode12[3]);
+                }
+            }
+        }
+
+        wrap<264> ringBufferWriteIndex = 0;
+        float[264] ringBuffer;
+
+        float nextChorusMode = 0.0f;
+        float dryCurrent = 1.0f;
+        float dryChange = 0.0f;
+        float dryTarget = 1.0f;
+
+        float maxOffset = 0.0f;
+        float averageSamples = 0.0f;
+
+        float lfoValue = 0.0f;
+        float lfoIncrement = 0.1f;
+
+        void updateValues(float frequency, float dry, float minDelay, float maxDelay) {
+            const float averageDelay = (minDelay + maxDelay) * 0.5f;
+            const float tmpMaxOffset = maxDelay - averageDelay;
+
+            averageSamples = float32(averageDelay * processor.frequency);
+            maxOffset = float32(tmpMaxOffset * processor.frequency);
+
+            dryTarget = dry;
+            dryChange = (dry - dryCurrent) / 1000;
+            lfoIncrement = float32(((lfoIncrement == 0 ? 0 : lfoIncrement < 0 ? -1 : 1) * 4 * frequency) / processor.frequency);
+        }
+
+        float readSample(int readOffset) {
+            return ringBuffer.at(wrap<264> (ringBufferWriteIndex - readOffset));
+        }
+
+        void writeSample(float f) {
+            ringBuffer.at(ringBufferWriteIndex++) = f;
+        }
+
+        void run() {
+            loop {
+                float dry = dryCurrent;
+
+                if (dryChange != 0.0f) {
+                    dry += dryChange;
+
+                    if (dry > 1.0f) {
+                        dry = 1.0f;
+                        dryChange = 0.0f;
+
+                        updateMode(nextChorusMode);
+                    } else if (dry < dryTarget && dryChange < 0.0f) {
+                        dry = dryTarget;
+                        dryChange = 0.0f;
+                    }
+
+                    dryCurrent = dry;
+                }
+
+                if (dry == 1.0f) { // Mode 0, no chorus, so we just return the given audio.
+                    audioOut << audioDryIn;
+                    audioOutToFilter << 0.0f;
+
+                    advance();
+                }
+
+                // Update LFO.
+                float tmpLfoValue = lfoValue + lfoIncrement;
+
+                if (lfoValue > 1.0f || lfoValue < -1.0f) {
+                    lfoIncrement = -lfoIncrement;
+                    tmpLfoValue = lfoValue + lfoIncrement;
+                }
+
+                lfoValue = tmpLfoValue;
+
+                const float delaySamples = averageSamples + lfoValue * maxOffset;
+                const float delayedValue = readSample(int(delaySamples));
+
+                audioOut << audioDryIn * dry;
+                audioOutToFilter << delayedValue * (1.0f - dry);
+
+                writeSample(audioFilteredIn);
+
+                advance();
+            }
+        }
+    }
+}

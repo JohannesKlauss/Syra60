@@ -1,0 +1,67 @@
+graph Oscillators
+{
+    input midiParser.parseMIDI midiIn;
+
+    input event float
+        detuneFactorParam, sawLevelParam, subLevelParam, pulseLevelParam, pulseWidthModulationParam, vcaLevelParam, noiseLevelParam, hpfFrequencyParam,
+        chorusModeParam, lfoRateParam, lfoDelayParam, lfoPitchModulationParam, lfoTriggerModeParam,
+        envAttack, envDecay, envSustain, envRelease;
+
+    output stream float<2> audioOut;
+
+    let
+    {
+        midiParser = soul::midi::MPEParser;
+
+        lfo = Syra60::LFO;
+        lfoEnv = Syra60::DAREnvelope;
+        chorus = Syra60::Chorus(7237.0f, 10644.0f);
+        controller = Syra60::Controller;
+        softClip = SoftClip;
+
+        voices = Voice[6];
+        voiceAllocator = soul::voice_allocators::Basic(6);
+    }
+
+    connection
+    {
+        lfoRateParam -> lfo.rate;
+        lfoDelayParam -> lfoEnv.delay;
+
+        // Forward events
+        detuneFactorParam -> voices.detuneFactorParam;
+        sawLevelParam -> voices.sawLevelParam;
+        subLevelParam -> voices.subLevelParam;
+        pulseLevelParam -> voices.pulseLevelParam;
+        pulseWidthModulationParam -> voices.pulseWidthModulationParam;
+        vcaLevelParam -> voices.vcaLevelParam;
+        noiseLevelParam -> voices.noiseLevelParam;
+        hpfFrequencyParam -> voices.hpfFrequencyParam;
+        lfoPitchModulationParam -> voices.lfoPitchModulationParam;
+
+        chorusModeParam -> chorus.chorusMode;
+
+        lfo.audioOut -> voices.lfoValue;
+
+        envAttack -> voices.envAttack;
+        envDecay -> voices.envDecay;
+        envSustain -> voices.envSustain;
+        envRelease -> voices.envRelease;
+
+        // Pass the events to the voice allocator
+        midiParser.eventOut -> voiceAllocator.eventIn;
+        midiParser.eventOut -> controller.eventIn;
+
+        controller.note1_active -> lfoEnv.triggerLevel;
+
+        lfoEnv.envelopeLevel -> lfo.envelopeLevelIn;
+        lfoTriggerModeParam -> lfo.triggerMode;
+
+        // Pass the allocated events to the voice bank
+        voiceAllocator.voiceEventOut -> voices.eventIn;
+
+        voices -> softClip -> chorus.audioIn;
+
+        chorus.audioOut -> audioOut;
+    }
+}

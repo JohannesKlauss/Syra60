@@ -1,0 +1,54 @@
+namespace Syra60 {
+    processor SinglePoleFilter(bool renderHiPass, float baseCutoff) {
+        input stream float audioIn, cutoffIn;
+
+        output stream float audioOut;
+
+        float
+            piOverSampleRate = float(pi / processor.frequency),
+            a0 = 1.0f,
+            b1 = 0.0f,
+            z1 = 0.0f,
+            lastCutoff = 0.0f;
+
+        const float[4] cuttoffInToFrequency = (140, 250, 520, 1220);
+
+        void setCutoff(float cuttofValue) {
+            b1 = -exp(-2.0f * cuttoffInToFrequency[int(cuttofValue)] * piOverSampleRate);
+            a0 = 1.0f + b1;
+        }
+
+        float renderLP(float in) {
+            const float out = in * a0 + z1;
+
+            z1 = -b1 * out;
+
+            return out;
+        }
+
+        float renderHP(float in) {
+            return in - renderLP(in);
+        }
+
+        void run() {
+            setCutoff(cutoffIn);
+
+            if (baseCutoff != 0.0f) {
+                b1 = -exp(-2.0f * baseCutoff * piOverSampleRate);
+                a0 = 1.0f + b1;
+            } 
+
+            loop {
+                if (lastCutoff != cutoffIn && baseCutoff == 0.0f) {
+                    setCutoff(cutoffIn);
+
+                    lastCutoff = cutoffIn;
+                }
+
+                audioOut << float32(renderHiPass ? renderHP(audioIn) : renderLP(audioIn));
+
+                advance();
+            }
+        }
+    }
+}

@@ -1,0 +1,79 @@
+namespace Syra60 {
+    processor DAREnvelope // DAR stands for Delay, Attack, Release since this envelope has a delayed attack.
+    {
+        input stream float triggerLevel;
+
+        input event float delay;
+
+        output stream float envelopeLevel;
+
+        const float[5] delayDurationCurve = (0.0f, 0.0639f, 0.85f, 1.2f, 2.685f);
+        const float[5] attackDurationCurve = (0.001f, 0.053f, 0.188f, 0.348f, 1.15f);
+
+        const float attackTCO = 0.03f;
+        const float releaseTCO = 0.025f;
+
+        event delay (float f)
+        {
+            let seconds = Util::interpolatedLookup(f * 0.01f * attackDurationCurve.size, attackDurationCurve);
+
+            attackCoeff = exp(-log((1.0f + attackTCO) / attackTCO) / (sampleRate * seconds));
+            attackOffset = (1.0f + attackTCO) * (1.0f - attackCoeff);
+
+            releaseCoeff = exp(-log((1.0f + releaseTCO) / releaseTCO) / (sampleRate * 0.1f));
+
+            delaySamples = int32(Util::interpolatedLookup(f * 0.01f * delayDurationCurve.size, delayDurationCurve) * processor.frequency);
+        }
+
+        const float sampleRate = float (processor.frequency);
+
+        float64 attackCoeff = 0.0f;
+        float64 attackOffset = 0.0f;
+        float64 sustainLevel = 1.0;
+        float64 releaseCoeff = 0.99991f;
+        float64 targetValue = 1.0f;
+        int32 delaySamples = 0.0f;
+
+        void run()
+        {
+            float64 value = 0;
+            int32 remainingDelaySamples = delaySamples;
+
+            loop
+            {
+                if (triggerLevel > 0)
+                {
+                    remainingDelaySamples -= 1;
+
+                    remainingDelaySamples = max(0, remainingDelaySamples);
+
+                    while (value < targetValue && remainingDelaySamples < 1)
+                    {
+                        value = value * attackCoeff + attackOffset;
+                        envelopeLevel << float(value);
+                        advance();
+
+                        if (triggerLevel <= 0)
+                            break;
+                    }
+
+                    // Cap it to the target value
+                    value = min (value, targetValue);
+
+                    // Sustain stage
+                    while (triggerLevel > 0 && remainingDelaySamples < 1)
+                    {
+                        envelopeLevel << float (value);
+                        advance();
+                    }
+                } else {
+                    remainingDelaySamples = delaySamples;
+                }
+
+                value *= releaseCoeff;
+                envelopeLevel << float (value);
+                advance();
+            }
+        }
+    }
+}

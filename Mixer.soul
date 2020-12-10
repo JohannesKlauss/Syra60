@@ -1,0 +1,15 @@
+namespace Syra60 {
+    processor Mixer {
+        input stream float dcoIn, noiseIn, envelopeLevelIn;
+
+        output stream float audioOut;
+
+        void run() {
+            loop {
+                audioOut << (dcoIn + noiseIn) * envelopeLevelIn;
+
+                advance();
+            }
+        }
+    }
+}

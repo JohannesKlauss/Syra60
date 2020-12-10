@@ -1,0 +1,49 @@
+namespace Syra60 {
+    processor LFO {
+        input event bool restart;
+        input event float rate, triggerMode;
+
+        input stream float envelopeLevelIn;
+
+        output stream float audioOut;
+
+        const float[5] frequencyCurve = (0.3f, 0.85f, 3.39f, 11.49f, 22.22f);
+
+        event restart(bool b) {
+            currentPhase = 1.0f;
+            currentValue = 0.0f;
+        }
+
+        event rate(float f) {
+            phaseIncrement = float32(Util::interpolatedLookup(f * frequencyCurve.size, frequencyCurve) * (1.0f / processor.frequency));
+        }
+
+        event triggerMode(float f) {
+            autoTriggerMode = f == 0.0f;
+
+            currentPhase = 1.0f;
+            currentValue = 0.0f;
+        }
+
+        float phaseIncrement = 0.0f;
+        float currentPhase = 1.0f;
+        float currentValue = 0.0f;
+        bool autoTriggerMode = true;
+
+        void run() {
+            loop {
+                currentPhase += phaseIncrement;
+
+                if (currentPhase > 1.0f) {
+                    currentPhase -= 1.0f;
+                }
+
+                currentValue = float32(sin(currentPhase * 2 * pi));
+
+                audioOut << currentValue * (autoTriggerMode ? 1.0f : envelopeLevelIn);
+
+                advance();
+            }
+        }
+    }
+}

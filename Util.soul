@@ -1,0 +1,29 @@
+namespace Util {
+    float fastTanh(float x) {
+        if (x < -3.0f) {
+            return -1.0f;
+        } else if (x > 3.0f) {
+            return 1.0f;
+        }
+
+        const float xSquared = x * x;
+
+        return (x * (27.0f + xSquared)) / (27.0f + 9.0f * xSquared);
+    }
+
+    float interpolatedLookup(float value, float[] table) {
+        const int index = int32(value);
+        const int nextIndex = index + 1;
+        const float factor = value - index;
+
+        if (index < 0) {
+            return table.at(0);
+        }
+
+        if (nextIndex >= table.size) {
+            return table.at(-1);
+        }
+
+        return table.at(index) * (1.0f - factor) + table.at(nextIndex) * factor;
+    }
+}

@@ -1,0 +1,125 @@
+namespace Syra60 {
+    processor DCO {
+        input stream float frequencyIn, detuneFactorIn, sawLevelIn, pulseWidthModulationIn, pulseLevelIn, subLevelIn, modEnvelopeLevelIn, lfoValueIn, lfoPitchModulationIn;
+
+        output stream float audioOut;
+
+        float
+            currentPhase = 0.0f,
+            phaseIncrement = 0.0f,
+            pulseWidth = 0.5f,
+            pulsePositive = 1.0f,
+            pulseNegative = -1.0f,
+            pulseHeight = 1.0f,
+            subOutput = 1.0f,
+            previousFrequencyIn = 0;
+
+        float calcPolyBLEP2(float phase, float inc, float height) {
+            float result = 0.0f;
+
+            if (phase < inc) {
+                const float t = phase / inc;
+
+                result = height * (t + t - t * t - 1.0f);
+            } else if (phase + inc > 1.0f) {
+                const float t = (phase - 1.0f) / inc;
+
+                result = height * (t * t + (t + t) + 1.0f);
+            }
+
+            return result;
+        }
+
+        float phase;
+
+        void run() {
+            loop {
+                if (previousFrequencyIn != frequencyIn) {
+                    currentPhase = 1.1f;
+                    phaseIncrement = float32(frequencyIn / processor.frequency);
+                    previousFrequencyIn = frequencyIn;
+                }
+
+                float detuneFactor = detuneFactorIn;
+                float detuneOctaves = lfoValueIn * lfoPitchModulationIn * 0.25f;
+
+                if (detuneFactorIn == 0.0f) {
+                    detuneFactor = 0.5f;
+                }
+
+                if (detuneOctaves != 0.0f) {
+                    detuneFactor *= pow(2.0f, detuneOctaves);
+                }
+
+
+                const float currentPhaseIncrement = phaseIncrement * detuneFactor;
+                const float origPhase = currentPhase;
+
+                currentPhase = currentPhase + currentPhaseIncrement;
+
+                // Change pulse width only when phase is wrapped to prevent aliasing.
+                if (currentPhase > 1.0f) {
+                    currentPhase = currentPhase - 1.0f;
+                    float basePulseWidth = pulseWidthModulationIn;
+
+                    // Decide between lfo and env pwm. Currently only env is supported.
+                    basePulseWidth *= modEnvelopeLevelIn;
+
+                    pulseWidth = 0.5f - 0.45f * basePulseWidth;
+                    pulsePositive = 1.0f - basePulseWidth * 0.95f;
+                    pulseNegative = -1.0f;
+                    pulseHeight = 0.45f * (pulsePositive - pulseNegative);
+                }
+
+                // Saw wave generator
+                float newSawOutput = 0.0f;
+                if (sawLevelIn > 0.0f) {
+                    newSawOutput = currentPhase + currentPhase - 1.0f;
+                    newSawOutput = newSawOutput - calcPolyBLEP2(currentPhase, currentPhaseIncrement, 1.0f);
+                }
+
+                // Pulse wave generator
+                float newPulseOutput = 0.0f;
+                if (pulseLevelIn > 0.0f) {
+                    if (currentPhase > pulseWidth) {
+                        pulsePositive = pulsePositive * 0.998f;
+                    } else {
+                        pulseNegative = pulseNegative * 0.998f;
+                    }
+
+                    newPulseOutput = currentPhase > pulseWidth ? pulsePositive : pulseNegative;
+                    newPulseOutput = newPulseOutput - calcPolyBLEP2(currentPhase, currentPhaseIncrement, pulseHeight);
+
+                    const float x = currentPhase - pulseWidth;
+
+                    newPulseOutput = newPulseOutput + calcPolyBLEP2(x < 0.0f ? x + 1.0f : x, currentPhaseIncrement, pulseHeight);
+                }
+
+                // Sub wave generator (The sub flip between -1 and +1 when the phase reaches 0.5)
+                subOutput = subOutput * 0.998f;
+                float newSubOutput = subOutput;
+                float y = currentPhase - 0.5f;
+
+                if (y < currentPhaseIncrement && (y > -currentPhaseIncrement)) {
+                    if (y < 0.0f) {
+                        y = y + 1.0f;
+                    }
+
+                    const float origSubOutput = newSubOutput;
+
+                    if (currentPhase >= 0.5f && origPhase < 0.5f) {
+                        newSubOutput = newSubOutput > 0.0f ? -1.0f : 1.0f;
+                        subOutput = newSubOutput;
+                    }
+
+                    newSubOutput = newSubOutput - calcPolyBLEP2(y, currentPhaseIncrement, origSubOutput);
+                }
+
+                // Mixdown
+                audioOut << (newSawOutput * (sawLevelIn / 2.85f) + newPulseOutput * (pulseLevelIn / 2.85f) + newSubOutput * (subLevelIn / 2.85f));
+
+                advance();
+            }
+        }
+    }
+}
