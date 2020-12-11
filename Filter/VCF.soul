@@ -1,0 +1,103 @@
+namespace Syra60 {
+    processor VCF {
+        input stream float audioIn, cutoffIn, resonanceIn, envModDepthIn, keyModDepthIn, envelopeLevelIn, lfoModDepthIn, lfoValueIn, triggerLevel, noteIn;
+
+        input event float envPolarity;
+
+        output stream float audioOut;
+
+        event envPolarity(float f) {
+            invertFilter = f == 1.0f;
+        }
+
+        float nyquistLimit = float32(processor.frequency * 0.5f);
+        float piOverSampleRate = float32(pi / processor.frequency);
+
+        float z1 = 0.0f;
+        float z2 = 0.0f;
+        float z3 = 0.0f;
+        float z4 = 0.0f;
+
+        bool invertFilter = false;
+
+        void reset() {
+            z1 = 0.0f;
+            z2 = 0.0f;
+            z3 = 0.0f;
+            z4 = 0.0f;
+        }
+
+        float calcCutoffFactor() {
+            const float filterNoteFactor = 5 * ((noteIn - 60) / (5 * 12));
+
+            const float cutoffDetunceOctave = (cutoffIn * 200.0f) / 12.0f;
+            const float envDetuneOctaves = envelopeLevelIn * envModDepthIn * 12;
+            const float keyboardDetuneOctaves = keyModDepthIn * filterNoteFactor;
+            const float resonanceDetuneOctaves = resonanceIn * 0.5f;
+            const float cutoffValue = cutoffDetunceOctave + (lfoModDepthIn * lfoValueIn * 3.0f * envelopeLevelIn) + envDetuneOctaves + keyboardDetuneOctaves + resonanceDetuneOctaves;
+
+            float frequency = 7.8f * pow(2.0f, cutoffValue);
+
+            if (frequency > nyquistLimit) {
+                frequency = nyquistLimit;
+            }
+
+            return tan(frequency * piOverSampleRate);
+        }
+
+        void triggerFilter(float initialExcite) {
+            z4 += initialExcite;
+        }
+
+        void run() {
+            loop {
+                if (triggerLevel <= 0.0f && envelopeLevelIn <= 0.0f) {
+                    reset();
+
+                    audioOut << audioIn;
+
+                    advance();
+                }
+
+                const float cutoffFactor = calcCutoffFactor();
+                const float tmp = 1.0f / (1.0f + cutoffFactor);
+
+                const float alpha = cutoffFactor * tmp;
+
+                const float beta4 = tmp;
+                const float beta3 = beta4 * alpha;
+                const float beta2 = beta3 * alpha;
+                const float beta1 = beta2 * alpha;
+
+                const float feedback = beta1 * z1 + beta2 * z2 + beta3 * z3 + beta4 * z4;
+                const float k = 4.0f * resonanceIn;
+
+                const float xIn = (audioIn - k * feedback) / (1.0f + k * alpha * alpha * alpha * alpha);
+
+                // Pole 1
+                const float lpf1In = (xIn - z1) * alpha;
+                const float lpf1Out = lpf1In + z1;
+                z1 = lpf1In + lpf1Out;
+
+                // Pole 2
+                const float lpf2In = (lpf1Out - z2) * alpha;
+                const float lpf2Out = lpf2In + z2;
+                z2 = lpf2In + lpf2Out;
+
+                // Pole 3
+                const float lpf3In = (lpf2Out - z3) * alpha;
+                const float lpf3Out = lpf3In + z3;
+                z3 = lpf3In + lpf3Out;
+
+                // Pole 4
+                const float lpf4In = (lpf3Out - z4) * alpha;
+                const float lpf4Out = lpf4In + z4;
+                z4 = lpf4In + lpf4Out;
+
+                audioOut << lpf4Out;
+
+                advance();
+            }
+        }
+    }
+}

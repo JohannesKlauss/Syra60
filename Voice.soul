@@ -7,7 +7,8 @@ graph Voice
                  soul::note_events::Slide) eventIn;
 
     input event float
-        detuneFactorParam, sawLevelParam, subLevelParam, pulseLevelParam, pulseWidthModulationParam, vcaLevelParam, noiseLevelParam, lfoPitchModulationParam, hpfFrequencyParam,
+        detuneFactorParam, sawLevelParam, subLevelParam, pulseLevelParam, pulseWidthModulationParam, noiseLevelParam, lfoPitchModulationParam,
+        vcfCutoffParam, vcfResoParam, vcfEnvPolarityParam, vcfEnvModDepthParam, vcfLfoModDepthParam, vcfKeyModDepthParam, pulseWidthModModeParam,
         envAttack, envDecay, envSustain, envRelease;
 
     input stream float lfoValue;
@@ -19,8 +20,7 @@ graph Voice
         voiceController = Syra60::Controller;
         dco = Syra60::DCO;
         noise = Syra60::Noise;
-        vca = Syra60::VCA;
-        hpf = Syra60::SinglePoleFilter(true, 0.0f);
+        vcf = Syra60::VCF;
         ampEnv = Syra60::ADSREnvelope;
         modEnv = Syra60::ADSREnvelope;
 
@@ -34,9 +34,12 @@ graph Voice
         pulseLevel = ParameterStream;
         pulseWidthModulation = ParameterStream;
         lfoPitchModulation = ParameterStream;
-        vcaLevel = ParameterStream;
         noiseLevel = ParameterStream;
-        hpfFrequency = ParameterStream;
+        vcfCutoff = ParameterStream;
+        vcfReso = ParameterStream;
+        vcfEnvModDepth = ParameterStream;
+        vcfLfoModDepth = ParameterStream;
+        vcfKeyModDepth = ParameterStream;
     }
 
     connection
@@ -47,9 +50,12 @@ graph Voice
         subLevelParam -> subLevel.parameterUpdate;
         pulseWidthModulationParam -> pulseWidthModulation.parameterUpdate;
         lfoPitchModulationParam -> lfoPitchModulation.parameterUpdate;
-        vcaLevelParam -> vcaLevel.parameterUpdate;
         noiseLevelParam -> noiseLevel.parameterUpdate;
-        hpfFrequencyParam -> hpfFrequency.parameterUpdate;
+        vcfCutoffParam -> vcfCutoff.parameterUpdate;
+        vcfResoParam -> vcfReso.parameterUpdate;
+        vcfEnvModDepthParam -> vcfEnvModDepth.parameterUpdate;
+        vcfLfoModDepthParam -> vcfLfoModDepth.parameterUpdate;
+        vcfKeyModDepthParam -> vcfKeyModDepth.parameterUpdate;
 
         eventIn -> voiceController.eventIn;
 
@@ -59,14 +65,16 @@ graph Voice
         envRelease -> ampEnv.release, modEnv.release;
 
         voiceController.note1_frequencyOut -> dco.frequencyIn;
+        voiceController.note1_active -> ampEnv.triggerLevel, modEnv.triggerLevel, vcf.triggerLevel;
+        voiceController.note1_noteOut -> vcf.noteIn;
 
-        voiceController.note1_active -> ampEnv.triggerLevel;
         ampEnv.envelopeLevel -> mixer.envelopeLevelIn;
+        modEnv.envelopeLevel -> dco.modEnvelopeLevelIn, vcf.envelopeLevelIn;
 
-        voiceController.note1_active -> modEnv.triggerLevel;
-        modEnv.envelopeLevel -> dco.modEnvelopeLevelIn;
+        lfoValue -> dco.lfoValueIn, vcf.lfoValueIn;
 
-        lfoValue -> dco.lfoValueIn;
+        vcfEnvPolarityParam -> vcf.envPolarity;
+        pulseWidthModModeParam -> dco.pulseWidthModMode;
 
         sawLevel.audioOut -> dco.sawLevelIn;
         subLevel.audioOut -> dco.subLevelIn;
@@ -74,15 +82,17 @@ graph Voice
         detuneFactor.audioOut -> dco.detuneFactorIn;
         pulseWidthModulation.audioOut -> dco.pulseWidthModulationIn;
         lfoPitchModulation.audioOut -> dco.lfoPitchModulationIn;
-        vcaLevel.audioOut -> vca.levelIn;
         noiseLevel.audioOut -> noise.noiseLevelIn;
         whiteNoise.out -> noise.whiteNoiseIn;
-        hpfFrequency.audioOut -> hpf.cutoffIn;
+        vcfCutoff.audioOut -> vcf.cutoffIn;
+        vcfReso.audioOut -> vcf.resonanceIn;
+        vcfEnvModDepth.audioOut -> vcf.envModDepthIn;
+        vcfLfoModDepth.audioOut -> vcf.lfoModDepthIn;
+        vcfKeyModDepth.audioOut -> vcf.keyModDepthIn;
 
         dco.audioOut -> mixer.dcoIn;
         noise.audioOut -> mixer.noiseIn;
-        mixer.audioOut -> hpf.audioIn;
-        hpf.audioOut -> vca.audioIn;
-        vca.audioOut -> audioOut;
+        mixer.audioOut -> vcf.audioIn;
+        vcf.audioOut -> audioOut;
     }
 }

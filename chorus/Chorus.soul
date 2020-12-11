@@ -33,6 +33,7 @@ namespace Syra60 {
         {
             chorusMode -> leftChannel.chorusMode;
             chorusMode -> rightChannel.chorusMode;
+            chorusMode -> mixer.chorusMode;
 
             // pre filtered signal. Used to store and delay in chorus channel.
             audioIn -> saturator -> preFilter.audioIn;
@@ -78,14 +79,22 @@ namespace Syra60 {
     processor ChorusMixer {
         input stream float audioLeftIn, audioRightIn, audioFilteredLeftIn, audioFilteredRightIn;
 
+        input event float chorusMode;
+
         output stream float<2> audioOut;
+
+        event chorusMode(float f) {
+            multiplier = f == 0.0f ? 0.53f : 1.0f;
+        }
+
+        float multiplier = 1.0f;
 
         void run() {
             loop {
                 let left  = audioLeftIn + audioFilteredLeftIn;
                 let right = audioRightIn + audioFilteredRightIn;
 
-                audioOut << float<2> (left, right);
+                audioOut << float<2> (left, right)  * multiplier;
 
                 advance();
             }

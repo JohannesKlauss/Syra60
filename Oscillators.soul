@@ -4,7 +4,8 @@ graph Oscillators
 
     input event float
         detuneFactorParam, sawLevelParam, subLevelParam, pulseLevelParam, pulseWidthModulationParam, vcaLevelParam, noiseLevelParam, hpfFrequencyParam,
-        chorusModeParam, lfoRateParam, lfoDelayParam, lfoPitchModulationParam, lfoTriggerModeParam,
+        chorusModeParam, lfoRateParam, lfoDelayParam, lfoPitchModulationParam, lfoTriggerModeParam, pulseWidthModModeParam,
+        vcfCutoffParam, vcfResoParam, vcfEnvPolarityParam, vcfEnvModDepthParam, vcfLfoModDepthParam, vcfKeyModDepthParam,
         envAttack, envDecay, envSustain, envRelease;
 
     output stream float<2> audioOut;
@@ -14,17 +15,25 @@ graph Oscillators
         midiParser = soul::midi::MPEParser;
 
         lfo = Syra60::LFO;
+        vca = Syra60::VCA;
         lfoEnv = Syra60::DAREnvelope;
         chorus = Syra60::Chorus(7237.0f, 10644.0f);
+        hpf = Syra60::SinglePoleFilter(true, 0.0f);
         controller = Syra60::Controller;
         softClip = SoftClip;
 
         voices = Voice[6];
         voiceAllocator = soul::voice_allocators::Basic(6);
+
+        hpfFrequency = ParameterStream;
+        vcaLevel = ParameterStream;
     }
 
     connection
     {
+        hpfFrequencyParam -> hpfFrequency.parameterUpdate;
+        vcaLevelParam -> vcaLevel.parameterUpdate;
+
         lfoRateParam -> lfo.rate;
         lfoDelayParam -> lfoEnv.delay;
 
@@ -34,14 +43,21 @@ graph Oscillators
         subLevelParam -> voices.subLevelParam;
         pulseLevelParam -> voices.pulseLevelParam;
         pulseWidthModulationParam -> voices.pulseWidthModulationParam;
-        vcaLevelParam -> voices.vcaLevelParam;
+        pulseWidthModModeParam -> voices.pulseWidthModModeParam;
         noiseLevelParam -> voices.noiseLevelParam;
-        hpfFrequencyParam -> voices.hpfFrequencyParam;
         lfoPitchModulationParam -> voices.lfoPitchModulationParam;
+        vcfCutoffParam -> voices.vcfCutoffParam;
+        vcfResoParam -> voices.vcfResoParam;
+        vcfEnvPolarityParam -> voices.vcfEnvPolarityParam;
+        vcfEnvModDepthParam -> voices.vcfEnvModDepthParam;
+        vcfLfoModDepthParam -> voices.vcfLfoModDepthParam;
+        vcfKeyModDepthParam -> voices.vcfKeyModDepthParam;
 
         chorusModeParam -> chorus.chorusMode;
 
         lfo.audioOut -> voices.lfoValue;
+        vcaLevel.audioOut -> vca.levelIn;
+        hpfFrequency.audioOut -> hpf.cutoffIn;
 
         envAttack -> voices.envAttack;
         envDecay -> voices.envDecay;
@@ -60,7 +76,9 @@ graph Oscillators
         // Pass the allocated events to the voice bank
         voiceAllocator.voiceEventOut -> voices.eventIn;
 
-        voices -> softClip -> chorus.audioIn;
+        voices -> hpf.audioIn;
+        hpf.audioOut -> softClip -> vca.audioIn;
+        vca.audioOut -> chorus.audioIn;
 
         chorus.audioOut -> audioOut;
     }

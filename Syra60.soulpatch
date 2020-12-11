@@ -13,7 +13,7 @@
         "source": [
             "Syra60.soul",
             "Controller.soul",
-            "DCO.soul",
+            "Generator/DCO.soul",
             "NoteHandler.soul",
             "ParameterStream.soul",
             "Voice.soul",
@@ -21,14 +21,15 @@
             "SoftClip.soul",
             "Util.soul",
             "VCA.soul",
-            "SinglePoleFilter.soul",
-            "Noise.soul",
-            "ADSREnvelope.soul",
-            "DAREnvelope.soul",
+            "Filter/SinglePoleFilter.soul",
+            "Generator/Noise.soul",
+            "Envelope/ADSREnvelope.soul",
+            "Envelope/DAREnvelope.soul",
             "Mixer.soul",
-            "chorus/Chorus.soul",
-            "chorus/ChorusChannel.soul",
-            "LFO.soul"        
+            "Chorus/Chorus.soul",
+            "Chorus/ChorusChannel.soul",
+            "Generator/LFO.soul",
+            "Filter/VCF.soul"
         ]
     }
 }

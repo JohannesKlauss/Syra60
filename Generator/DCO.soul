@@ -2,7 +2,13 @@ namespace Syra60 {
     processor DCO {
         input stream float frequencyIn, detuneFactorIn, sawLevelIn, pulseWidthModulationIn, pulseLevelIn, subLevelIn, modEnvelopeLevelIn, lfoValueIn, lfoPitchModulationIn;
 
+        input event float pulseWidthModMode;
+
         output stream float audioOut;
+
+        event pulseWidthModMode(float f) {
+            modMode = f;
+        }
 
         float
             currentPhase = 0.0f,
@@ -12,7 +18,8 @@ namespace Syra60 {
             pulseNegative = -1.0f,
             pulseHeight = 1.0f,
             subOutput = 1.0f,
-            previousFrequencyIn = 0;
+            previousFrequencyIn = 0,
+            modMode = 0.0f;
 
         float calcPolyBLEP2(float phase, float inc, float height) {
             float result = 0.0f;
@@ -62,8 +69,12 @@ namespace Syra60 {
                     currentPhase = currentPhase - 1.0f;
                     float basePulseWidth = pulseWidthModulationIn;
 
-                    // Decide between lfo and env pwm. Currently only env is supported.
-                    basePulseWidth *= modEnvelopeLevelIn;
+                    // Decide between lfo and env pwm.
+                    if (modMode == 2.0f) {
+                        basePulseWidth *= modEnvelopeLevelIn;
+                    } else if (modMode == 0.0f) {
+                        basePulseWidth *= lfoValueIn * 0.5f + 0.5f;
+                    }
 
                     pulseWidth = 0.5f - 0.45f * basePulseWidth;
                     pulsePositive = 1.0f - basePulseWidth * 0.95f;
