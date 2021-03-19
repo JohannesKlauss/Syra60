@@ -1,6 +1,6 @@
 namespace Syra60 {
     processor DCO {
-        input stream float frequencyIn, detuneFactorIn, sawLevelIn, pulseWidthModulationIn, pulseLevelIn, subLevelIn, modEnvelopeLevelIn, lfoValueIn, lfoPitchModulationIn;
+        input stream float frequencyIn, detuneFactorIn, sawLevelIn, pulseWidthModulationIn, pulseLevelIn, subLevelIn, modEnvelopeLevelIn, lfoValueIn, lfoPitchModulationIn, noiseLevelIn;
 
         input event float pulseWidthModMode;
 
@@ -126,8 +126,21 @@ namespace Syra60 {
                     newSubOutput = newSubOutput - calcPolyBLEP2(y, currentPhaseIncrement, origSubOutput);
                 }
 
+                const float sLevel = sawLevelIn > 0.0f ? 0.2f : 0.0f;
+                const float pLevel = pulseLevelIn > 0.0f ? 0.2f : 0.0f;
+                const float suLevel = subLevelIn * 0.195f;
+                const float nLevel = noiseLevelIn * 0.21f;
+
+                float mixFactor = sLevel + pLevel + suLevel + nLevel;
+
+                if (mixFactor > 0.26f) {
+                    mixFactor = 0.26f / (0.26f + (mixFactor - 0.26f) * 0.3f);
+
+                    audioOut << (newSawOutput * (sLevel * mixFactor) + newPulseOutput * (pLevel * mixFactor) + newSubOutput * (suLevel * mixFactor));
+                }
+
                 // Mixdown
-                audioOut << (newSawOutput * (sawLevelIn / 2.85f) + newPulseOutput * (pulseLevelIn / 2.85f) + newSubOutput * (subLevelIn / 2.85f));
+                audioOut << (newSawOutput * sLevel + newPulseOutput * pLevel + newSubOutput * suLevel);
 
                 advance();
             }

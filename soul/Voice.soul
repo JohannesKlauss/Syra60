@@ -28,6 +28,8 @@ graph Voice
 
         whiteNoise = soul::noise::White;
 
+        gain = VelocityEnvelopeGain;
+
         detuneFactor = ParameterStream;
         sawLevel = ParameterStream;
         subLevel = ParameterStream;
@@ -67,8 +69,9 @@ graph Voice
         voiceController.note1_frequencyOut -> dco.frequencyIn;
         voiceController.note1_active -> ampEnv.triggerLevel, modEnv.triggerLevel, vcf.triggerLevel;
         voiceController.note1_noteOut -> vcf.noteIn;
+        voiceController.note1_velocity -> gain.velocityIn;
 
-        ampEnv.envelopeLevel -> mixer.envelopeLevelIn;
+        ampEnv.envelopeLevel -> mixer.envelopeLevelIn, gain.envelopeLevelIn;
         modEnv.envelopeLevel -> dco.modEnvelopeLevelIn, vcf.envelopeLevelIn;
 
         lfoValue -> dco.lfoValueIn, vcf.lfoValueIn;
@@ -76,13 +79,13 @@ graph Voice
         vcfEnvPolarityParam -> vcf.envPolarity;
         pulseWidthModModeParam -> dco.pulseWidthModMode;
 
-        sawLevel.audioOut -> dco.sawLevelIn;
-        subLevel.audioOut -> dco.subLevelIn;
-        pulseLevel.audioOut -> dco.pulseLevelIn;
+        sawLevel.audioOut -> dco.sawLevelIn, noise.sawLevelIn;
+        subLevel.audioOut -> dco.subLevelIn, noise.subLevelIn;
+        pulseLevel.audioOut -> dco.pulseLevelIn, noise.pulseLevelIn;
         detuneFactor.audioOut -> dco.detuneFactorIn;
         pulseWidthModulation.audioOut -> dco.pulseWidthModulationIn;
         lfoPitchModulation.audioOut -> dco.lfoPitchModulationIn;
-        noiseLevel.audioOut -> noise.noiseLevelIn;
+        noiseLevel.audioOut -> noise.noiseLevelIn, dco.noiseLevelIn;
         whiteNoise.out -> noise.whiteNoiseIn;
         vcfCutoff.audioOut -> vcf.cutoffIn;
         vcfReso.audioOut -> vcf.resonanceIn;
@@ -92,7 +95,9 @@ graph Voice
 
         dco.audioOut -> mixer.dcoIn;
         noise.audioOut -> mixer.noiseIn;
-        mixer.audioOut -> vcf.audioIn;
-        vcf.audioOut -> audioOut;
+        mixer.audioOut -> gain.audioIn;
+        /*mixer.audioOut -> vcf.audioIn;
+        vcf.audioOut -> gain.audioIn;*/
+        gain -> audioOut;
     }
 }

@@ -29,7 +29,8 @@
             "Chorus/Chorus.soul",
             "Chorus/ChorusChannel.soul",
             "Generator/LFO.soul",
-            "Filter/VCF.soul"
+            "Filter/VCF.soul",
+            "VelocityEnvelopeGain.soul"
         ]
     }
 }

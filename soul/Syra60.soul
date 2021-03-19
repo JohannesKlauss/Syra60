@@ -10,37 +10,37 @@ graph Syra60Synth  [[main]]
     {
         event soul::midi::Message midiIn;
 
-        oscillators.lfoRateParam [[ name: "LFO Rate", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
+        oscillators.lfoRateParam [[ name: "LFO Rate", min: 0, max: 1, init: 0.19, unit: "", step: 0.01 ]];
         oscillators.lfoDelayParam [[ name: "LFO Delay", min: 0, max: 100, init: 0, unit: "", step: 1 ]];
         oscillators.lfoTriggerModeParam [[ name: "LFO Trigger Mode", min: 0, max: 1, init: 0, text: "Auto|Man" ]];
 
         oscillators.detuneFactorParam [[ name: "Range", min: 0, max: 2, init: 1, text: "16'|8'|4'" ]];
 
-        oscillators.lfoPitchModulationParam [[ name: "LFO Pitch Mod", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
+        oscillators.lfoPitchModulationParam [[ name: "LFO Pitch Mod", min: 0, max: 1, init: 0.03, unit: "", step: 0.01 ]];
         oscillators.pulseWidthModulationParam [[ name: "PWM", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
         oscillators.pulseWidthModModeParam [[ name: "PMW Mod", min: 0, max: 2, init: 0, text: "LFO|Man|Env" ]];
-        oscillators.sawLevelParam [[ name: "Saw Level", min: 0, max: 1, init: 0.5, unit: "", step: 0.01 ]];
-        oscillators.pulseLevelParam [[ name: "Pulse Level", min: 0, max: 1, init: 0.5, unit: "", step: 0.01 ]];
-        oscillators.subLevelParam [[ name: "Sub Level", min: 0, max: 1, init: 0.5, unit: "", step: 0.01 ]];
-        oscillators.noiseLevelParam [[ name: "Noise Level", min: 0, max: 1, init: 0.5, unit: "", step: 0.01 ]];
+        oscillators.sawLevelParam [[ name: "Saw", min: 0, max: 1, init: 0, text: "Off|On" ]];
+        oscillators.pulseLevelParam [[ name: "Pulse", min: 0, max: 1, init: 0, text: "Off|On" ]];
+        oscillators.subLevelParam [[ name: "Sub Level", min: 0, max: 1, init: 1, unit: "", step: 0.01 ]];
+        oscillators.noiseLevelParam [[ name: "Noise Level", min: 0, max: 1, init: 0.0, unit: "", step: 0.01 ]];
 
         oscillators.hpfFrequencyParam [[ name: "HPF Freq", min: 0, max: 3, init: 0, text: "0|1|2|3" ]];
 
-        oscillators.vcfCutoffParam [[ name: "VCF Freq", min: 0, max: 1, init: 1, unit: "", step: 0.01 ]];
+        oscillators.vcfCutoffParam [[ name: "VCF Freq", min: 0, max: 1, init: 0.59, unit: "", step: 0.01 ]];
         oscillators.vcfResoParam [[ name: "VCF Res", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
         oscillators.vcfEnvPolarityParam [[ name: "VCF Env Pol", min: 0, max: 1, init: 0, text: "+|-" ]];
         oscillators.vcfEnvModDepthParam [[ name: "VCF Env", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
-        oscillators.vcfLfoModDepthParam [[ name: "VCF LFO", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
-        oscillators.vcfKeyModDepthParam [[ name: "VCF Key", min: 0, max: 1, init: 0, unit: "", step: 0.01 ]];
+        oscillators.vcfLfoModDepthParam [[ name: "VCF LFO", min: 0, max: 1, init: 0.13, unit: "", step: 0.01 ]];
+        oscillators.vcfKeyModDepthParam [[ name: "VCF Key", min: 0, max: 1, init: 0.71, unit: "", step: 0.01 ]];
 
         oscillators.vcaLevelParam [[ name: "VCA Level", min: 0, max: 1, init: 0.5, unit: "", step: 0.01 ]];
 
-        oscillators.envAttack [[ name: "ENV Attack", min: 0, max: 100, init: 10, unit: "", step: 1 ]];
+        oscillators.envAttack [[ name: "ENV Attack", min: 0, max: 100, init: 40, unit: "", step: 1 ]];
         oscillators.envDecay [[ name: "ENV Decay", min: 0, max: 100, init: 0, unit: "", step: 1 ]];
         oscillators.envSustain [[ name: "ENV Sustain", min: 0, max: 100, init: 100, unit: "", step: 1 ]];
-        oscillators.envRelease [[ name: "ENV Release", min: 0, max: 100, init: 50, unit: "", step: 1 ]];
+        oscillators.envRelease [[ name: "ENV Release", min: 0, max: 100, init: 56, unit: "", step: 1 ]];
 
-        oscillators.chorusModeParam [[ name: "Chorus", min: 0, max: 3, init: 0, text: "Off|Mode 1|Mode 2|Mode 1 + 2" ]];
+        oscillators.chorusModeParam [[ name: "Chorus", min: 0, max: 3, init: 1, text: "Off|Mode 1|Mode 2|Mode 1 + 2" ]];
     }
 
     output stream float<2> audioOut;

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9dac8b03-87f9-4d00-a8ef-0f2f7267f80f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../Controller.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Envelope/ADSREnvelope.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Envelope/DAREnvelope.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Filter/SinglePoleFilter.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Filter/VCF.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Generator/DCO.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Generator/LFO.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Generator/Noise.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Mixer.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../NoteHandler.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Oscillators.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ParameterStream.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SoftClip.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Syra60.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Syra60.soulpatch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Util.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../VCA.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Voice.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chorus/Chorus.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chorus/ChorusChannel.soul" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../syra60.wasm" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="KubernetesApiPersistence">
+    <option name="context" value="do-fra1-syra-dev-cluster-k8s" />
+    <option name="namespace" value="default" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="gpiardn8" />
+  </component>
+  <component name="ProjectId" id="1lYrQKpLinpnIoj9N5v791lduyX" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RunManager" selected="npm.build">
+    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="start" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+        <item itemvalue="npm.build" />
+        <item itemvalue="npm.start" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9dac8b03-87f9-4d00-a8ef-0f2f7267f80f" name="Default Changelist" comment="" />
+      <created>1607784848277</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1607784848277</updated>
+      <workItem from="1607784849402" duration="1850000" />
+      <workItem from="1611925360106" duration="4000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1771" height="303" key="GridCell.Tab.0.bottom" timestamp="1607787245736">
+      <screen x="0" y="23" width="1792" height="1097" />
+    </state>
+    <state width="1771" height="303" key="GridCell.Tab.0.bottom/0.23.1792.1097@0.23.1792.1097" timestamp="1607787245736" />
+    <state width="1771" height="303" key="GridCell.Tab.0.center" timestamp="1607787245736">
+      <screen x="0" y="23" width="1792" height="1097" />
+    </state>
+    <state width="1771" height="303" key="GridCell.Tab.0.center/0.23.1792.1097@0.23.1792.1097" timestamp="1607787245736" />
+    <state width="1771" height="303" key="GridCell.Tab.0.left" timestamp="1607787245735">
+      <screen x="0" y="23" width="1792" height="1097" />
+    </state>
+    <state width="1771" height="303" key="GridCell.Tab.0.left/0.23.1792.1097@0.23.1792.1097" timestamp="1607787245735" />
+    <state width="1771" height="303" key="GridCell.Tab.0.right" timestamp="1607787245736">
+      <screen x="0" y="23" width="1792" height="1097" />
+    </state>
+    <state width="1771" height="303" key="GridCell.Tab.0.right/0.23.1792.1097@0.23.1792.1097" timestamp="1607787245736" />
+    <state x="397" y="210" key="SettingsEditor" timestamp="1607785013598">
+      <screen x="0" y="23" width="1792" height="1097" />
+    </state>
+    <state x="397" y="210" key="SettingsEditor/0.23.1792.1097@0.23.1792.1097" timestamp="1607785013598" />
+  </component>
+</project>

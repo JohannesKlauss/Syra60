@@ -6,7 +6,9 @@ namespace Syra60 {
 
         void run() {
             loop {
-                audioOut << audioIn * levelIn;
+                const float gainFactor = levelIn > 0.0f ? (pow(1.2589f, levelIn * 10.0f) * 0.1f) : levelIn;
+
+                audioOut << audioIn * gainFactor;
 
                 advance();
             }

@@ -1,0 +1,13 @@
+processor VelocityEnvelopeGain {
+    input stream float audioIn, envelopeLevelIn, velocityIn;
+
+    output stream float audioOut;
+
+    void run() {
+        loop {
+            audioOut << audioIn * envelopeLevelIn;
+
+            advance();
+        }
+    }
+}

@@ -1,0 +1,40 @@
+namespace Syra60 {
+    processor Noise {
+        input stream float noiseLevelIn, whiteNoiseIn, sawLevelIn, pulseLevelIn, subLevelIn;
+
+        output stream float audioOut;
+
+        float
+            b1 = 0.0f,
+            a0 = 1.0f,
+            z1 = 0.0f;
+
+        void run() {
+            var rng = soul::random::RandomNumberState(processor.id + 10);
+
+            b1 = float32(-exp((-2.0f * 5000 * pi) / processor.frequency));
+            a0 = a0 + b1;
+
+            loop {
+                const float out = rng.getNextBipolar() * a0 - z1;
+
+                z1 = b1 * out;
+
+                const float sLevel = sawLevelIn > 0.0f ? 0.2f : 0.0f;
+                const float pLevel = pulseLevelIn > 0.0f ? 0.2f : 0.0f;
+                const float suLevel = subLevelIn > 0.0f ? subLevelIn * 0.195f : 0.0f;
+                const float nLevel = noiseLevelIn * 0.21f;
+
+                float mixFactor = sLevel + pLevel + suLevel + nLevel;
+
+                if (mixFactor > 0.26f) {
+                    mixFactor = 0.26f / (0.26f + (mixFactor - 0.26f) * 0.3f);
+                }
+
+                audioOut << out * (nLevel * mixFactor);
+
+                advance();
+            }
+        }
+    }
+}

@@ -69,7 +69,7 @@ namespace Syra60 {
 
         void run() {
             loop {
-                audioOut << tanh(audioIn * 0.6f) * 1.86202f;
+                audioOut << audioIn;
 
                 advance();
             }
@@ -91,10 +91,10 @@ namespace Syra60 {
 
         void run() {
             loop {
-                let left  = audioLeftIn + audioFilteredLeftIn;
-                let right = audioRightIn + audioFilteredRightIn;
+                let left  = audioLeftIn + audioFilteredRightIn;
+                let right = audioRightIn + audioFilteredLeftIn;
 
-                audioOut << float<2> (left, right)  * multiplier;
+                audioOut << float<2> (left, right);
 
                 advance();
             }
